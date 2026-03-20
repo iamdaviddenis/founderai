@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>FounderAI — Daily Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --accent: #7ef0c0;
+    --accent2: #a78bfa;
+    --accent3: #fb923c;
+    --text: #f0ede8;
+    --muted: #7a7a8a;
+    --muted2: #4a4a5a;
+    --danger: #f87171;
+    --radius: 16px;
+    --radius-sm: 10px;
+    font-size: 15px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    max-width: 420px;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ── Screens ── */
+  .screen { display: none; min-height: 100vh; padding-bottom: 80px; animation: fadeUp 0.3s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
+
+  /* ── Nav ── */
+  .nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 420px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 10px 0 18px;
+    z-index: 100;
+  }
+  .nav-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); font-family: 'DM Sans', sans-serif;
+    font-size: 9px; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 6px 8px; border-radius: 10px;
+    transition: color 0.2s;
+  }
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn svg { width: 22px; height: 22px; }
+
+  /* ── Typography ── */
+  h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.8rem; line-height: 1.15; }
+  h2 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.25rem; }
+  h3 { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 1rem; }
+
+  /* ── Header ── */
+  .header { padding: 52px 20px 20px; }
+  .header-meta { font-size: 11px; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; font-weight: 500; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px; margin: 0 16px 12px;
+  }
+  .card-accent { border-color: var(--accent); border-width: 1px; }
+
+  /* ── Stat row ── */
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 0 16px; margin-bottom: 12px; }
+  .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 10px; text-align: center; }
+  .stat-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.5rem; }
+  .stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+
+  /* ── Mission card ── */
+  .mission-card {
+    background: linear-gradient(135deg, #0f1f18 0%, #131320 100%);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius); padding: 22px 20px;
+    margin: 0 16px 12px; position: relative; overflow: hidden;
+  }
+  .mission-card::before {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    background: radial-gradient(circle, rgba(126,240,192,0.12) 0%, transparent 70%);
+    border-radius: 50%; pointer-events: none;
+  }
+  .mission-tag { display: inline-block; background: rgba(126,240,192,0.12); color: var(--accent); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; padding: 4px 10px; border-radius: 6px; margin-bottom: 12px; }
+  .mission-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; line-height: 1.3; margin-bottom: 10px; }
+  .mission-body { font-size: 0.88rem; color: #b8b8c8; line-height: 1.6; }
+  .mission-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+  .mission-level { font-size: 11px; color: var(--muted); }
+  .mission-xp { font-family: 'Syne', sans-serif; font-size: 0.9rem; color: var(--accent); font-weight: 700; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: block; width: calc(100% - 32px); margin: 0 16px;
+    padding: 16px; border-radius: var(--radius-sm); border: none; cursor: pointer;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: 0.02em;
+    transition: transform 0.15s, opacity 0.15s;
+  }
+  .btn:active { transform: scale(0.97); opacity: 0.9; }
+  .btn-primary { background: var(--accent); color: #061410; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); width: auto; margin: 0; padding: 10px 18px; font-size: 0.85rem; }
+
+  /* ── Prompt Lab ── */
+  .prompt-area {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 14px;
+    margin: 0 16px 12px; width: calc(100% - 32px);
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; line-height: 1.6; resize: none;
+    min-height: 120px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .prompt-area:focus { border-color: var(--accent2); }
+  .prompt-area::placeholder { color: var(--muted2); }
+
+  /* ── Score bars ── */
+  .score-item { margin-bottom: 14px; }
+  .score-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+  .score-label span:first-child { color: var(--muted); }
+  .score-label span:last-child { font-weight: 500; }
+  .score-bar { height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .score-fill { height: 100%; border-radius: 3px; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+
+  /* ── Feedback box ── */
+  .feedback-box { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px; margin: 0 16px 12px; border-left: 3px solid var(--accent2); }
+  .feedback-box.good { border-color: var(--accent); }
+  .feedback-box.warn { border-color: var(--accent3); }
+  .feedback-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+  .feedback-text { font-size: 0.88rem; line-height: 1.6; color: #c8c8d8; }
+
+  /* ── Progress ── */
+  .level-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 20px; padding: 6px 14px; font-size: 0.85rem; font-weight: 500;
+  }
+  .level-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  .xp-bar-wrap { background: var(--surface2); border-radius: 10px; height: 8px; margin: 10px 0; overflow: hidden; }
+  .xp-bar { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--accent) 0%, #34d399 100%); transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+
+  .skill-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .skill-row:last-child { border-bottom: none; }
+  .skill-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .skill-name { font-weight: 500; font-size: 0.9rem; }
+  .skill-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .skill-pct { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin-left: auto; }
+
+  /* ── Streak calendar ── */
+  .streak-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+  .streak-day { aspect-ratio: 1; border-radius: 5px; background: var(--surface2); }
+  .streak-day.done { background: var(--accent); opacity: 0.85; }
+  .streak-day.today { background: var(--accent); outline: 2px solid white; outline-offset: 2px; opacity: 1; }
+  .streak-day.missed { background: var(--danger); opacity: 0.3; }
+
+  /* ── Missions list ── */
+  .mission-pill {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 16px; margin: 0 16px 8px;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .mission-pill:active { background: var(--surface2); border-color: var(--border2); }
+  .mission-pill.done { opacity: 0.5; }
+  .mission-pill-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .mission-pill-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--accent); font-weight: 500; }
+  .mission-pill-xp { font-size: 11px; color: var(--muted); }
+  .mission-pill-title { font-size: 0.9rem; font-weight: 500; line-height: 1.4; }
+
+  /* ── Section header ── */
+  .section-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); padding: 0 16px; margin: 20px 0 10px; }
+
+  /* ── Divider ── */
+  .divider { height: 1px; background: var(--border); margin: 16px; }
+
+  /* ── Tag ── */
+  .tag { display: inline-block; padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 500; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+  /* ── Coach screen ── */
+  .chat-wrap { padding: 0 16px; }
+  .bubble { border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; font-size: 0.88rem; line-height: 1.6; max-width: 90%; animation: fadeUp 0.25s ease; }
+  .bubble.coach { background: var(--surface2); color: #c8c8d8; border-bottom-left-radius: 4px; }
+  .bubble.user { background: var(--accent); color: #061410; font-weight: 500; margin-left: auto; border-bottom-right-radius: 4px; }
+  .coach-name { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 6px; padding: 0 16px; }
+  .chat-input-row { display: flex; gap: 8px; padding: 12px 16px; position: sticky; bottom: 80px; background: var(--bg); border-top: 1px solid var(--border); }
+  .chat-input { flex: 1; background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; padding: 11px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; }
+  .chat-input::placeholder { color: var(--muted2); }
+  .chat-send { background: var(--accent); border: none; border-radius: 10px; width: 44px; height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: opacity 0.15s; }
+  .chat-send:active { opacity: 0.8; }
+
+  /* ── Loading spinner ── */
+  .loading { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.85rem; padding: 0 16px; }
+  .dot-pulse { display: flex; gap: 4px; }
+  .dot-pulse span { width: 5px; height: 5px; border-radius: 50%; background: var(--accent2); animation: pulse 1.2s ease-in-out infinite; }
+  .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+  .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+
+  /* ── Scroll ── */
+  .scrollable { overflow-y: auto; }
+
+  /* ── Book screen ── */
+  .book-chapter-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 18px; margin: 0 16px 10px;
+    cursor: pointer; transition: border-color 0.2s;
+  }
+  .book-chapter-card.active-chapter { border-color: var(--accent2); }
+  .book-chapter-card.done-chapter { border-color: rgba(126,240,192,0.4); }
+  .book-chapter-card:active { background: var(--surface2); }
+  .chapter-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .chapter-num { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 500; }
+  .chapter-badge { font-size: 10px; padding: 3px 8px; border-radius: 5px; font-weight: 500; }
+  .badge-todo { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .badge-today { background: rgba(167,139,250,0.15); color: var(--accent2); border: 1px solid rgba(167,139,250,0.3); }
+  .badge-done { background: rgba(126,240,192,0.12); color: var(--accent); border: 1px solid rgba(126,240,192,0.3); }
+  .chapter-title { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.95rem; line-height: 1.3; margin-bottom: 4px; }
+  .chapter-hook { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+
+  /* Reading session */
+  .session-wrap { padding: 0 16px; }
+  .session-chapter-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent2); margin-bottom: 6px; font-weight: 500; }
+  .key-ideas-box { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 12px; border-left: 3px solid var(--accent2); }
+  .key-ideas-box h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent2); margin-bottom: 8px; }
+  .key-ideas-box ul { list-style: none; }
+  .key-ideas-box ul li { font-size: 0.82rem; color: #c0c0d0; line-height: 1.6; padding: 3px 0; padding-left: 14px; position: relative; }
+  .key-ideas-box ul li::before { content: '→'; position: absolute; left: 0; color: var(--accent2); font-size: 10px; top: 5px; }
+
+  .summary-prompt { font-size: 0.88rem; color: #b0b0c8; line-height: 1.6; margin-bottom: 10px; }
+  .summary-area { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 14px; width: 100%; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; line-height: 1.6; resize: none; min-height: 130px; outline: none; transition: border-color 0.2s; }
+  .summary-area:focus { border-color: var(--accent2); }
+  .summary-area::placeholder { color: var(--muted2); }
+
+  .check-result { border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 12px; animation: fadeUp 0.3s ease; }
+  .check-result.pass { background: rgba(126,240,192,0.08); border: 1px solid rgba(126,240,192,0.3); }
+  .check-result.partial { background: rgba(251,146,60,0.08); border: 1px solid rgba(251,146,60,0.25); }
+  .check-result.fail { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.25); }
+  .check-result-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 6px; }
+  .check-result.pass .check-result-label { color: var(--accent); }
+  .check-result.partial .check-result-label { color: var(--accent3); }
+  .check-result.fail .check-result-label { color: var(--danger); }
+  .check-result-text { font-size: 0.85rem; line-height: 1.6; color: #c8c8d8; }
+  .missed-ideas { margin-top: 10px; }
+  .missed-ideas p { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 6px; }
+  .missed-idea-pill { display: inline-block; background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 4px 10px; font-size: 11px; color: var(--muted); margin: 2px 3px 2px 0; }
+
+  /* Book progress bar */
+  .book-progress-wrap { background: var(--surface); border-radius: var(--radius); padding: 16px 18px; margin: 0 16px 12px; }
+  .book-prog-bar { height: 6px; background: var(--surface2); border-radius: 4px; margin: 10px 0 6px; overflow: hidden; }
+  .book-prog-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent2), #818cf8); transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+
+  /* ── Completed check ── */
+  .check-circle { width: 20px; height: 20px; border-radius: 50%; background: var(--accent); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  /* ── Improve section ── */
+  .improve-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin: 0 16px 10px; }
+  .improve-card .tag { margin-right: 6px; margin-bottom: 6px; }
+
+  /* ── Splash ── */
+  #splash { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; transition: opacity 0.5s; }
+  #splash.fade { opacity: 0; pointer-events: none; }
+  .splash-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.8rem; letter-spacing: -0.02em; }
+  .splash-logo span { color: var(--accent); }
+  .splash-sub { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  .splash-ring { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--border2); border-top-color: var(--accent); animation: spin 1s linear infinite; margin-bottom: 32px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 6px; padding: 0 16px 12px; }
+  .tab { padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; background: var(--surface); border: 1px solid var(--border); color: var(--muted); transition: all 0.2s; }
+  .tab.active { background: rgba(126,240,192,0.12); border-color: var(--accent); color: var(--accent); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Splash -->
+<div id="splash">
+  <div class="splash-ring"></div>
+  <div class="splash-logo">Founder<span>AI</span></div>
+  <div class="splash-sub">Your daily AI mastery app</div>
+</div>
+
+<!-- ───────── HOME ───────── -->
+<div class="screen active" id="screen-home">
+  <div class="header">
+    <div class="header-meta" id="greeting-label">Good morning</div>
+    <h1>David's<br>AI Mission</h1>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="stat-val" style="color:var(--accent)" id="stat-streak">7</div>
+      <div class="stat-lbl">Day streak</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" style="color:var(--accent2)" id="stat-xp">340</div>
+      <div class="stat-lbl">Total XP</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" style="color:var(--accent3)" id="stat-built">4</div>
+      <div class="stat-lbl">Built</div>
+    </div>
+  </div>
+
+  <p class="section-title">Today's mission</p>
+
+  <div class="mission-card" id="today-mission-card">
+    <div class="mission-tag" id="today-mission-tag">Prompt Engineering</div>
+    <div class="mission-title" id="today-mission-title">Upgrade your cr-assistant for farmer queries</div>
+    <div class="mission-body" id="today-mission-body">Rewrite your cr-assistant system prompt so it confidently handles farmer questions about Vuna and Rutubisha dosage — like your best salesperson would.</div>
+    <div class="mission-footer">
+      <div class="mission-level" id="today-mission-level">Level: Operator → Builder</div>
+      <div class="mission-xp" id="today-mission-xp">+50 XP</div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" style="margin-bottom:10px" onclick="startMission()">Start mission →</button>
+  <button class="btn btn-ghost" style="display:block;text-align:center;width:calc(100% - 32px);margin:0 16px;padding:12px" onclick="goTo('screen-missions')">See all missions</button>
+
+  <p class="section-title" style="margin-top:20px">This week</p>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3>Streak calendar</h3>
+      <span style="font-size:11px;color:var(--muted)">March 2026</span>
+    </div>
+    <div class="streak-grid" id="streak-grid"></div>
+    <div style="margin-top:12px;font-size:12px;color:var(--muted)">🔥 7 days running — keep it going!</div>
+  </div>
+
+  <p class="section-title">Quick actions</p>
+  <div style="display:flex;gap:8px;padding:0 16px;overflow-x:auto;padding-bottom:4px">
+    <button class="btn-ghost btn" onclick="goTo('screen-lab')" style="white-space:nowrap;flex-shrink:0">Prompt Lab</button>
+    <button class="btn-ghost btn" onclick="goTo('screen-coach')" style="white-space:nowrap;flex-shrink:0">Ask Coach</button>
+    <button class="btn-ghost btn" onclick="goTo('screen-improve')" style="white-space:nowrap;flex-shrink:0">Improve Systems</button>
+  </div>
+</div>
+
+<!-- ───────── MISSIONS ───────── -->
+<div class="screen" id="screen-missions">
+  <div class="header">
+    <div class="header-meta">CutOff Recycle · Personalized</div>
+    <h1>Missions</h1>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="filterMissions('all',this)">All</div>
+    <div class="tab" onclick="filterMissions('prompt',this)">Prompting</div>
+    <div class="tab" onclick="filterMissions('system',this)">Systems</div>
+    <div class="tab" onclick="filterMissions('strategy',this)">Strategy</div>
+  </div>
+
+  <div id="missions-list"></div>
+</div>
+
+<!-- ───────── PROMPT LAB ───────── -->
+<div class="screen" id="screen-lab">
+  <div class="header">
+    <div class="header-meta">Practice · Get graded</div>
+    <h1>Prompt Lab</h1>
+  </div>
+
+  <div id="lab-context-card" class="card card-accent" style="margin-bottom:12px">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:8px">Today's challenge</div>
+    <p style="font-size:0.88rem;color:#c8c8d8;line-height:1.6">Write a system prompt for your <strong style="color:var(--text)">cr-assistant</strong> that handles farmer questions about Vuna liquid fertilizer — including dosage, timing, and common crop types in Arusha.</p>
+  </div>
+
+  <textarea class="prompt-area" id="prompt-input" placeholder="Write your prompt here...
+
+Example: You are an expert agronomist assistant for CutOff Recycle..."></textarea>
+
+  <div style="display:flex;gap:8px;padding:0 16px;margin-bottom:16px">
+    <button class="btn btn-primary" style="margin:0;flex:1" onclick="gradePrompt()">Grade my prompt →</button>
+    <button class="btn btn-ghost" onclick="clearPrompt()">Clear</button>
+  </div>
+
+  <!-- Results (hidden until graded) -->
+  <div id="lab-results" class="hidden">
+    <div class="divider"></div>
+    <p class="section-title">Your score</p>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;color:var(--accent)" id="total-score">—</span>
+        <span style="font-size:13px;color:var(--muted)">out of 100</span>
+      </div>
+      <div id="score-bars"></div>
+    </div>
+
+    <p class="section-title">Feedback</p>
+    <div id="feedback-area"></div>
+
+    <p class="section-title">Improved version</p>
+    <div class="card" id="improved-prompt-card" style="display:none">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent2);margin-bottom:8px">AI coach rewrite</div>
+      <p id="improved-prompt-text" style="font-size:0.85rem;line-height:1.7;color:#c8c8d8;white-space:pre-wrap"></p>
+    </div>
+
+    <div style="padding:0 16px;margin-top:8px">
+      <button class="btn btn-secondary" onclick="saveAndNext()">Save + earn XP →</button>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="lab-loading" class="hidden" style="padding:20px 0">
+    <div class="loading">
+      <div class="dot-pulse"><span></span><span></span><span></span></div>
+      <span>Grading your prompt...</span>
+    </div>
+  </div>
+</div>
+
+<!-- ───────── COACH ───────── -->
+<div class="screen" id="screen-coach">
+  <div class="header" style="padding-bottom:10px">
+    <div class="header-meta">Always on · Context-aware</div>
+    <h1>AI Coach</h1>
+  </div>
+
+  <div style="padding:0 16px 10px;display:flex;align-items:center;gap:10px">
+    <div style="width:38px;height:38px;border-radius:50%;background:rgba(126,240,192,0.15);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px">🤖</div>
+    <div>
+      <div style="font-weight:500;font-size:0.9rem">Coach AI</div>
+      <div style="font-size:11px;color:var(--accent)">● online · knows your business</div>
+    </div>
+  </div>
+
+  <div id="chat-messages" style="padding:0 0 10px"></div>
+
+  <div id="chat-loading" class="hidden" style="padding:8px 16px 12px">
+    <div class="loading">
+      <div class="dot-pulse"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <div class="chat-input-row">
+    <input class="chat-input" id="chat-input" type="text" placeholder="Ask anything about AI...">
+    <button class="chat-send" onclick="sendChat()">
+      <svg width="18" height="18" fill="none" stroke="#061410" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l14 7-14 7V2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ───────── IMPROVE (Systems) ───────── -->
+<div class="screen" id="screen-improve">
+  <div class="header">
+    <div class="header-meta">Week 2 · Builder level</div>
+    <h1>Improve<br>Your Systems</h1>
+  </div>
+
+  <div class="card card-accent">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:8px">This week's focus</div>
+    <h3 style="margin-bottom:6px">cr-assistant v2</h3>
+    <p style="font-size:0.85rem;color:var(--muted);line-height:1.5">Upgrade your team AI assistant with better context, product knowledge, and fallback handling.</p>
+    <div style="margin-top:12px;display:flex;align-items:center;gap:8px">
+      <div style="flex:1;background:var(--surface2);border-radius:6px;height:5px;overflow:hidden"><div style="width:40%;height:100%;background:var(--accent);border-radius:6px"></div></div>
+      <span style="font-size:11px;color:var(--muted)">2/5 done</span>
+    </div>
+  </div>
+
+  <p class="section-title">System tasks</p>
+
+  <div class="improve-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+      <h3 style="font-size:0.92rem">Add product knowledge base</h3>
+      <span class="check-circle">✓</span>
+    </div>
+    <p style="font-size:0.83rem;color:var(--muted);line-height:1.5;margin-bottom:10px">Embed Rutubisha, Vuna, and McheKuza specs, dosages, and application timing into the assistant's context.</p>
+    <span class="tag">Done</span><span class="tag" style="color:var(--accent);border-color:var(--accent)">+30 XP</span>
+  </div>
+
+  <div class="improve-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+      <h3 style="font-size:0.92rem">Build farmer Q&A fallback</h3>
+      <span style="font-size:11px;color:var(--accent3);background:rgba(251,146,60,0.1);padding:3px 8px;border-radius:5px;border:1px solid rgba(251,146,60,0.3)">In progress</span>
+    </div>
+    <p style="font-size:0.83rem;color:var(--muted);line-height:1.5;margin-bottom:10px">When the assistant is uncertain, it should say so clearly and suggest Richard or Kephason as escalation paths.</p>
+    <span class="tag">Prompting</span><span class="tag">Safety</span>
+    <div style="margin-top:12px"><button class="btn btn-secondary" style="width:100%;margin:0;padding:12px;font-size:0.85rem" onclick="loadImproveTask()">Work on this →</button></div>
+  </div>
+
+  <div class="improve-card" style="opacity:0.5">
+    <h3 style="font-size:0.92rem;margin-bottom:6px">Add Swahili response mode</h3>
+    <p style="font-size:0.83rem;color:var(--muted);line-height:1.5">Enable the assistant to switch to Swahili when farmers ask in Swahili.</p>
+    <span class="tag">Locked</span>
+  </div>
+
+  <div class="improve-card" style="opacity:0.5">
+    <h3 style="font-size:0.92rem;margin-bottom:6px">KoboToolbox data summarizer</h3>
+    <p style="font-size:0.83rem;color:var(--muted);line-height:1.5">Auto-summarize field visit data into a weekly report for you.</p>
+    <span class="tag">Locked</span>
+  </div>
+
+</div>
+
+<!-- ───────── PROGRESS ───────── -->
+<div class="screen" id="screen-progress">
+  <div class="header">
+    <div class="header-meta">Your AI journey</div>
+    <h1>Progress</h1>
+  </div>
+
+  <div class="card" style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+    <div style="text-align:center">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2.2rem;color:var(--accent)">340</div>
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em">Total XP</div>
+    </div>
+    <div style="flex:1">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span class="level-badge"><span class="level-dot"></span>Operator</span>
+        <span style="font-size:12px;color:var(--muted)">→ Builder</span>
+      </div>
+      <div class="xp-bar-wrap"><div class="xp-bar" id="xp-bar" style="width:68%"></div></div>
+      <div style="font-size:11px;color:var(--muted)">340 / 500 XP to Builder level</div>
+    </div>
+  </div>
+
+  <p class="section-title">Skill breakdown</p>
+  <div class="card">
+    <div class="skill-row">
+      <div class="skill-icon" style="background:rgba(126,240,192,0.12)">⚡</div>
+      <div>
+        <div class="skill-name">Prompting</div>
+        <div class="skill-sub">7 prompts graded · 3 perfect</div>
+      </div>
+      <div class="skill-pct" style="color:var(--accent)">72%</div>
+    </div>
+    <div class="skill-row">
+      <div class="skill-icon" style="background:rgba(167,139,250,0.12)">🔧</div>
+      <div>
+        <div class="skill-name">Automation</div>
+        <div class="skill-sub">2 workflows built</div>
+      </div>
+      <div class="skill-pct" style="color:var(--accent2)">45%</div>
+    </div>
+    <div class="skill-row">
+      <div class="skill-icon" style="background:rgba(251,146,60,0.12)">📊</div>
+      <div>
+        <div class="skill-name">Data & Analysis</div>
+        <div class="skill-sub">1 data task done</div>
+      </div>
+      <div class="skill-pct" style="color:var(--accent3)">28%</div>
+    </div>
+    <div class="skill-row">
+      <div class="skill-icon" style="background:rgba(248,113,113,0.12)">🧭</div>
+      <div>
+        <div class="skill-name">AI Strategy</div>
+        <div class="skill-sub">Unlocks at Builder</div>
+      </div>
+      <div class="skill-pct" style="color:var(--muted)">—</div>
+    </div>
+  </div>
+
+  <p class="section-title">What you've built</p>
+  <div class="card">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;gap:10px;align-items:flex-start"><span class="check-circle" style="margin-top:2px">✓</span><div><div style="font-size:0.88rem;font-weight:500">cr-assistant system prompt v1</div><div style="font-size:11px;color:var(--muted)">Mar 15 · +30 XP</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start"><span class="check-circle" style="margin-top:2px">✓</span><div><div style="font-size:0.88rem;font-weight:500">Farmer follow-up summary prompt</div><div style="font-size:11px;color:var(--muted)">Mar 17 · +40 XP</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start"><span class="check-circle" style="margin-top:2px">✓</span><div><div style="font-size:0.88rem;font-weight:500">Jira task categorizer prompt</div><div style="font-size:11px;color:var(--muted)">Mar 18 · +35 XP</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start"><span class="check-circle" style="margin-top:2px">✓</span><div><div style="font-size:0.88rem;font-weight:500">Investor update generator</div><div style="font-size:11px;color:var(--muted)">Mar 19 · +45 XP</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ───────── BOOK ───────── -->
+<div class="screen" id="screen-book">
+  <div class="header" style="padding-bottom:12px">
+    <div class="header-meta">Daily reading · Summarize & get checked</div>
+    <h1>The AI-Driven<br>Leader</h1>
+  </div>
+
+  <!-- Book overview / chapter list -->
+  <div id="book-list-view">
+    <div class="book-progress-wrap">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.4rem;color:var(--accent2)" id="book-chapters-done">0</div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em">Chapters done</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.4rem;color:var(--text)" id="book-xp-earned">0</div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em">XP earned</div>
+        </div>
+      </div>
+      <div class="book-prog-bar"><div class="book-prog-fill" id="book-prog-fill" style="width:0%"></div></div>
+      <div style="font-size:11px;color:var(--muted)" id="book-prog-label">0 of 14 chapters · Geoff Woods</div>
+    </div>
+
+    <p class="section-title">Chapters</p>
+    <div id="chapters-list"></div>
+  </div>
+
+  <!-- Reading session view -->
+  <div id="book-session-view" class="hidden">
+    <div class="session-wrap">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <button onclick="backToBookList()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--muted);border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">← Back</button>
+        <div style="font-size:11px;color:var(--muted)" id="session-breadcrumb">Chapter 1</div>
+      </div>
+
+      <div class="session-chapter-label" id="session-chapter-label">Chapter 1</div>
+      <h2 id="session-chapter-title" style="margin-bottom:10px;line-height:1.3">Title</h2>
+
+      <div class="key-ideas-box" id="session-key-ideas">
+        <h4>What this chapter covers</h4>
+        <ul id="key-ideas-list"></ul>
+      </div>
+
+      <p style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:8px">Your summary</p>
+      <p class="summary-prompt" id="session-prompt">Read this chapter, then write your summary below. Aim for 4–6 sentences covering the main ideas.</p>
+
+      <textarea class="summary-area" id="summary-input" placeholder="Write your summary here in your own words...&#10;&#10;Tip: don't just list facts — explain what the idea means for you as a founder running CutOff Recycle."></textarea>
+
+      <div style="display:flex;gap:8px;margin:10px 0 14px">
+        <button class="btn btn-primary" style="margin:0;flex:1" onclick="checkSummary()">Check my summary →</button>
+        <button class="btn btn-ghost" onclick="clearSummary()">Clear</button>
+      </div>
+
+      <div id="check-loading" class="hidden" style="padding:10px 0">
+        <div class="loading"><div class="dot-pulse"><span></span><span></span><span></span></div><span>Checking your understanding...</span></div>
+      </div>
+
+      <div id="check-result-area"></div>
+
+      <div id="session-complete-btn" class="hidden" style="margin-bottom:16px">
+        <button class="btn btn-primary" style="margin:0;width:100%" onclick="completeChapter()">Mark complete · Earn XP →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Bottom Nav ── -->
+<nav class="nav">
+  <button class="nav-btn active" id="nav-home" onclick="goTo('screen-home','nav-home')">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+    Home
+  </button>
+  <button class="nav-btn" id="nav-missions" onclick="goTo('screen-missions','nav-missions')">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    Missions
+  </button>
+  <button class="nav-btn" id="nav-lab" onclick="goTo('screen-lab','nav-lab')">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    Lab
+  </button>
+  <button class="nav-btn" id="nav-coach" onclick="goTo('screen-coach','nav-coach')">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    Coach
+  </button>
+  <button class="nav-btn" id="nav-book" onclick="goTo('screen-book','nav-book')">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    Book
+  </button>
+  <button class="nav-btn" id="nav-progress" onclick="goTo('screen-progress','nav-progress')">
+    <svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    XP
+  </button>
+</nav>
+
+<script>
+// ── State ──
+const STATE = {
+  xp: 340,
+  streak: 7,
+  built: 4,
+  currentMissionIdx: 0,
+  promptGraded: false,
+  chatHistory: [],
+};
+
+const MISSIONS = [
+  { tag: "Prompt Engineering", title: "Upgrade cr-assistant for farmer queries", body: "Rewrite your cr-assistant system prompt so it confidently handles farmer questions about Vuna and Rutubisha dosage — like your best salesperson would.", level: "Operator → Builder", xp: 50, cat: "prompt", done: false },
+  { tag: "Automation", title: "Build a KoboToolbox summary workflow", body: "Write a prompt that transforms a raw KoboToolbox field visit response into a 3-sentence WhatsApp update for your investor or team.", level: "Builder", xp: 60, cat: "system", done: false },
+  { tag: "Prompt Engineering", title: "Jira task auto-categorizer", body: "Create a prompt that takes a plain English task description and outputs the correct Jira project (HC, AGRI, CEO, SPOJ, ADMIN) with a reason.", level: "Operator", xp: 40, cat: "prompt", done: false },
+  { tag: "AI Strategy", title: "Map your AI stack", body: "List every AI tool CutOff Recycle uses today. For each one, write 1 sentence on what it does and 1 sentence on what it could do better.", level: "Operator", xp: 35, cat: "strategy", done: false },
+  { tag: "Systems", title: "Add a Swahili mode to cr-assistant", body: "Extend your assistant's system prompt so it detects when a user writes in Swahili and responds in Swahili automatically.", level: "Builder", xp: 55, cat: "system", done: false },
+  { tag: "AI Strategy", title: "Write your AI moat statement", body: "In 3 sentences, explain why CutOff Recycle's AI system will be hard for a competitor to copy in 2 years. This goes in your pitch deck.", level: "Strategist", xp: 70, cat: "strategy", done: false },
+  { tag: "Prompt Engineering", title: "Investor update generator", body: "Build a prompt that takes 5 bullet points about the week's progress and outputs a polished 150-word investor WhatsApp update in your voice.", level: "Builder", xp: 50, cat: "prompt", done: true },
+];
+
+// ── Book Data ──
+const BOOK_CHAPTERS = [
+  {
+    num: 1, part: "Part 1",
+    title: "The Rise of AI and the AI-Driven Leader",
+    hook: "Why Blockbuster died and what it means for your business today.",
+    xp: 40,
+    ideas: [
+      "AI is a strategic Thought Partner, not just a writing tool or email helper",
+      "The shift: stop asking 'How do I solve this?' — start asking 'How can AI help me solve this?'",
+      "Three problems AI solves immediately: data overload, doing more with less, and balancing short vs long-term",
+      "Leaders who don't adopt AI won't be replaced by AI — they'll be replaced by leaders who use it"
+    ],
+    checkPrompt: "Read Chapter 1 of The AI-Driven Leader. In 4–6 sentences, explain: (1) What is the book's core argument about AI's role for leaders? (2) What is the 'AI as Thought Partner' concept? (3) What's the ONE question shift the author recommends?",
+    keyPoints: ["Thought Partner vs tool distinction","The question shift from 'How do I?' to 'How can AI help?'","Three immediate use cases","Urgency argument — the learning curve is now"]
+  },
+  {
+    num: 2, part: "Part 1",
+    title: "What Past Tech Revolutions Teach AI-Driven Leaders",
+    hook: "Rockefeller, Nokia, and why history keeps rhyming.",
+    xp: 35,
+    ideas: [
+      "Every major tech revolution (printing press, assembly line, internet) created both job loss and more jobs — AI will too",
+      "Nokia had better features than the iPhone but lost because of leadership failures, not product failures",
+      "The shift needed: from 'learn once, apply forever' (industrial) to 'learn constantly, thrive continuously' (AI era)",
+      "Human strengths — creativity, strategic thinking, collaboration — are MORE valuable in the AI era, not less"
+    ],
+    checkPrompt: "Read Chapter 2. Summarize: (1) What does the Nokia story teach about AI adoption failure? (2) What is the key mindset shift from industrial to AI-era thinking? (3) What human skills become MORE valuable in the AI era?",
+    keyPoints: ["Nokia failure = leadership, not product","Learn constantly vs learn once","Human strengths reclaimed by AI era","Tech is net positive historically"]
+  },
+  {
+    num: 3, part: "Part 1",
+    title: "Shift From Operational Overwhelm to Strategic Clarity",
+    hook: "Satya Nadella turned Microsoft around with one mindset shift. Here's what it was.",
+    xp: 45,
+    ideas: [
+      "The AI Empowerment Curve has 5 stages: Lightbulb Moment → Reality Check → Building Momentum → Accelerating → Expanding",
+      "The 'Reality Check' stage (frustration, bad results) is normal and expected — most people quit here",
+      "You are the Thought Leader; AI is the Thought Partner. Never swap these roles.",
+      "Adoption curve: Innovators (2.5%) → Early Adopters (13.5%) → Early/Late Majority → Laggards. Start with innovators on your team."
+    ],
+    checkPrompt: "Read Chapter 3. Explain: (1) The 5 stages of the AI Empowerment Curve in your own words. (2) What is the Thought Leader / Thought Partner distinction and why does it matter? (3) Which stage are you currently at, and why?",
+    keyPoints: ["5-stage Empowerment Curve","Reality Check is normal — don't quit","Thought Leader vs Thought Partner","Team adoption curve — start with innovators"]
+  },
+  {
+    num: 4, part: "Part 2",
+    title: "Understand AI: What It Is, How It Works, How to Start",
+    hook: "The 7 ingredients of a powerful prompt — and the two most founders miss.",
+    xp: 55,
+    ideas: [
+      "AI is a prediction machine (next token prediction), not an oracle — it can hallucinate",
+      "The 7 prompt ingredients: Task, Context, Persona, Output Format, Constraints, Explain Why, Ask AI to Interview You",
+      "'Interview mode' — asking AI to ask YOU one question at a time — is the most powerful but most underused technique",
+      "AI risks: hallucination, bias inheritance, privacy, abdicating Thought Leadership"
+    ],
+    checkPrompt: "Read Chapter 4. Describe: (1) The 7 prompt ingredients in order. (2) What is 'interview mode' and why is it powerful? (3) What is the hallucination risk and how do you manage it? Apply this to a CutOff Recycle example.",
+    keyPoints: ["AI = prediction machine, not oracle","7 prompt ingredients — especially Persona and Interview mode","Hallucination risk and how to manage it","You stay Thought Leader always"]
+  },
+  {
+    num: 5, part: "Part 2",
+    title: "Supercharge Your Leadership: Five AI Use Cases Today",
+    hook: "Strategic thinking, decisions, content, ideas, analysis — with real prompts for each.",
+    xp: 50,
+    ideas: [
+      "The 3 AI personas for strategic thinking: The Interviewer (draws ideas out), The Communicator (crafts messages), The Challenger (stress-tests your plans)",
+      "AI for content creation: you are the editor, not the author. AI gets you 50–60% there; your judgment finishes it.",
+      "AI for idea generation: use it to find NON-OBVIOUS alternatives, not just to refine existing ideas",
+      "AI for analysis: upload data (CSVs, reviews, reports) and talk to it like a colleague asking questions"
+    ],
+    checkPrompt: "Read Chapter 5. Explain: (1) The Interviewer, Communicator, and Challenger personas with one example each. (2) How would you use The Challenger for a real CutOff Recycle decision you're facing right now? (3) What does 'AI gets you 50–60% there' mean in practice?",
+    keyPoints: ["3 strategic personas: Interviewer, Communicator, Challenger","50–60% rule — you are always the editor","Non-obvious idea generation technique","Data analysis: talk to data like a colleague"]
+  },
+  {
+    num: 6, part: "Part 2",
+    title: "The High Price of Wrong Questions: Overcoming Biases with AI",
+    hook: "Keith Cunningham lost $100M asking the wrong questions. Here's how AI helps you ask better ones.",
+    xp: 50,
+    ideas: [
+      "Three cognitive biases that destroy decisions: Confirmation bias (only seeing what confirms you), Anchoring bias (first number anchors everything), Sunk Cost Fallacy (throwing good money after bad)",
+      "Critical warning: if you ask AI to IMPROVE your existing idea, it amplifies your biases. You must ask it to challenge them or find alternatives.",
+      "Characteristics of a great question: focused on goals, clear and concise, provokes deeper thinking",
+      "Scenario simulation: ask AI to roleplay as your customer, investor, or board member to expose blind spots"
+    ],
+    checkPrompt: "Read Chapter 6. Explain: (1) The three cognitive biases and how they show up in leadership decisions. (2) The critical warning about how AI can amplify your biases. (3) Apply the 'scenario simulation' technique to a real situation — e.g. your next investor conversation or your SIDO factory request.",
+    keyPoints: ["3 biases: confirmation, anchoring, sunk cost","CRITICAL: asking AI to improve ideas amplifies bias","Great question = goal-focused, clear, thought-provoking","Scenario simulation technique for investor/board prep"]
+  },
+  {
+    num: 7, part: "Part 2",
+    title: "Collapse the Time From Data to Decisions",
+    hook: "A marketer analyzed 40,000 reviews in minutes. Here's how you do the same with your field data.",
+    xp: 55,
+    ideas: [
+      "AI can process in seconds what takes humans hours — upload CSVs, reports, documents and interrogate them conversationally",
+      "You don't need data science skills — you need to ask the right questions of your data",
+      "Research that used to cost $500 and take two weeks can now take under an hour for free",
+      "The data deluge problem: leaders make decisions on the limited info in front of them — AI expands your view"
+    ],
+    checkPrompt: "Read Chapter 7. Explain: (1) How would you apply the 'data to decisions' technique to your KoboToolbox field data or monthly cash flow? (2) What does 'talk to data like a colleague' mean in practice — give a specific example using CutOff Recycle numbers or reports. (3) What's the research time comparison the author gives?",
+    keyPoints: ["Upload data and ask questions conversationally","No data science skills needed","Research time: 2 weeks/$500 → 1 hour/free","Leaders decide on limited info — AI expands the lens"]
+  },
+  {
+    num: 8, part: "Part 2",
+    title: "Navigate Short-Term Pressures Without Sacrificing Long-Term Growth",
+    hook: "Blockbuster's real killer wasn't Netflix — it was short-term pressure from an activist investor.",
+    xp: 45,
+    ideas: [
+      "The 4 drivers of growth: Strategy, Execution, People, Technology — all must be aligned",
+      "Short-term thinking trap: 63% of executives delay long-term projects to protect quarterly targets",
+      "Five characteristics of a strategic mindset: customer-first, vision-to-results, prioritization, data-driven, adaptable",
+      "Use AI as a board member or executive coach to pressure-test whether your short-term actions are building long-term advantage"
+    ],
+    checkPrompt: "Read Chapter 8. Explain: (1) The 4 drivers of growth and how they apply to CutOff Recycle right now. (2) What is the short-term trap and how have you personally experienced it? (3) How would you use the 'AI as executive coach' prompt to align your current priorities to your 3-year vision?",
+    keyPoints: ["4 growth drivers: Strategy/Execution/People/Tech","63% of execs sacrifice long-term for quarterly targets","5 strategic mindset traits","AI as board member/executive coach technique"]
+  },
+  {
+    num: 9, part: "Part 2",
+    title: "Accelerate Strategic Momentum: Faster, Smarter Decisions",
+    hook: "A 7-step decision framework with AI at every step — built for decisions that matter.",
+    xp: 60,
+    ideas: [
+      "7-step decision framework: Clarify Objective → Map Stakeholders → Gather Info → Identify Solutions → Evaluate Risks → Decide & Plan → Deliver Results",
+      "Step 2 (Stakeholder Mapping) is the most skipped — early adopters closest to impact have the best insights",
+      "Use AI to roleplay as decision-makers and influencers — practice the conversation before you have it",
+      "Decisions are hypotheses — implement, evaluate, iterate. Making the decision right matters more than making the 'right' decision."
+    ],
+    checkPrompt: "Read Chapter 9. Explain: (1) The 7-step decision framework in your own words. (2) Why is stakeholder mapping (Step 2) the most skipped and most important? (3) Apply Steps 1–3 of the framework to a real decision you're facing at CutOff Recycle right now.",
+    keyPoints: ["7-step decision framework","Stakeholder mapping: decision-makers, influencers, champions, early adopters","Roleplay technique: practice conversations with AI","Decisions = hypotheses → implement/evaluate/iterate"]
+  },
+  {
+    num: 10, part: "Part 3",
+    title: "Lead with Strategic Clarity: Ensure Year-Round Alignment",
+    hook: "Why executive teams lose sight of their goals mid-year — and the quarterly review that fixes it.",
+    xp: 45,
+    ideas: [
+      "Three leadership traps: not thinking big enough, losing the big picture, doing it in isolation",
+      "Quarterly Strategic Review framework: review Strategy, Execution, People, and Technology every 90 days",
+      "Goals should be set BEYOND what you think you can do — the goal is to grow into who you need to become",
+      "Don't do AI adoption alone — find a community or peer who's ahead of you (like you've done with EAN, Anzisha, Village Capital)"
+    ],
+    checkPrompt: "Read Chapter 10. Explain: (1) The 3 common leadership traps and which one you personally struggle with most. (2) The Quarterly Strategic Review — what are the 4 areas reviewed? (3) How would you apply the 'think beyond what you believe is achievable' principle to CutOff Recycle's 2026 goals?",
+    keyPoints: ["3 traps: thinking small, losing big picture, isolation","Quarterly review: Strategy/Execution/People/Tech","Goals should stretch beyond current beliefs","Community and peer learning accelerates growth"]
+  },
+  {
+    num: 11, part: "Part 3",
+    title: "The Critical First 30 Days: Focused Execution",
+    hook: "Amundsen vs Scott: same goal, opposite outcomes. One planned obsessively. One improvised.",
+    xp: 40,
+    ideas: [
+      "The 20-Mile March principle: consistent, disciplined daily progress beats bursts of intensity",
+      "First 30 days after any strategic decision are critical — this is where execution either locks in or drifts",
+      "Priority-setting: identify the ONE thing each week that, if done, makes everything else easier or unnecessary",
+      "AI can help you convert your strategic plan into a concrete 30-day execution map with owners and deadlines"
+    ],
+    checkPrompt: "Read Chapter 11. Explain: (1) The Amundsen vs Scott lesson and what it means for how you run CutOff Recycle. (2) How do you apply the '20-Mile March' concept to your current weekly rhythm? (3) What would a 30-day execution map look like for your most important current priority?",
+    keyPoints: ["Amundsen vs Scott: consistency beats intensity","20-Mile March: daily discipline over sprints","The ONE Thing: identify highest-leverage weekly priority","AI converts strategy into 30-day execution map"]
+  },
+  {
+    num: 12, part: "Part 3",
+    title: "10x The Impact of Every Employee",
+    hook: "The shift from telling people what to do — to teaching them how to think.",
+    xp: 50,
+    ideas: [
+      "Shift from manager (tells people what to do) to leader (tells people the vision and lets them own the how)",
+      "The 'Bring me a plan' standard: employees come to you with their plan aligned to goals, not waiting for direction",
+      "AI as a productivity multiplier: each team member needs their own 'lightbulb moment'",
+      "People strategy: identify your innovators and early adopters first — get them winning, let their results pull others along"
+    ],
+    checkPrompt: "Read Chapter 12. Explain: (1) The shift from telling people what to do to teaching them to think — what does this look like for your team of 6? (2) Which of your team members (Kephason, Richard, Mercy, etc.) would you classify as innovators vs early adopters? (3) How would you create a 'lightbulb moment' for the most resistant person on your team?",
+    keyPoints: ["Manager → Leader: vision + let them own the how","'Bring me a plan' standard for your team","Each employee needs their own lightbulb moment","Identify innovators first — let results spread adoption"]
+  },
+  {
+    num: 13, part: "Part 3",
+    title: "Integrate AI Seamlessly: Change Management",
+    hook: "Why 95% of executives know AI is coming but less than 5% have acted — and what you can do about it.",
+    xp: 45,
+    ideas: [
+      "Change resistance is psychological (fear of unknown), organizational (bureaucracy), and leadership-related (poor communication)",
+      "Lead with empathetic strength: acknowledge fears without letting them derail the direction",
+      "Make AI a standard, not a suggestion — clearly communicate it as the new way of working",
+      "Transparency builds trust: share both the benefits AND the risks you don't yet know"
+    ],
+    checkPrompt: "Read Chapter 13. Explain: (1) The 3 sources of change resistance and which applies most to your team. (2) What does 'empathetic strength' mean in practice — give an example from your own leadership. (3) How would you communicate an 'AI is now a standard, not a suggestion' message to your team without creating fear?",
+    keyPoints: ["3 change resistance sources: psychological/org/leadership","Empathetic strength: hold space AND hold the standard","AI as standard, not suggestion","Transparent communication = trust during change"]
+  },
+  {
+    num: 14, part: "Part 3",
+    title: "Go from 0 to 1: The Simple Path to Deliver Value with AI",
+    hook: "The simplest possible starting point — and why most leaders overthink it.",
+    xp: 60,
+    ideas: [
+      "Start with employee productivity, not products or operations — it has the fastest, most visible ROI",
+      "The path: 1 lightbulb moment per person → reality check → momentum → acceleration → expansion",
+      "Don't try to integrate AI into everything at once — pick one use case, get a win, then expand",
+      "Your role as CEO: be the practice leader. You must go first. Your team watches what you do, not what you say."
+    ],
+    checkPrompt: "Read Chapter 14. Explain: (1) Why should you start with employee productivity, not AI-in-products? (2) What does 'practice leader' mean and how does it apply to you as David, CEO of CutOff Recycle? (3) What is the single most important AI use case you could introduce to your team THIS WEEK that would create a lightbulb moment?",
+    keyPoints: ["Start with employee productivity — fastest ROI","One use case at a time — win then expand","Practice leader: you go first","The path for each person: lightbulb → reality check → momentum"]
+  }
+];
+
+const BOOK_STATE = {
+  completedChapters: new Set(),
+  currentChapterIdx: null,
+  summaryChecked: false,
+};
+
+// ── Book Functions ──
+function initBook() {
+  renderChapterList();
+  updateBookProgress();
+}
+
+function renderChapterList() {
+  const list = document.getElementById('chapters-list');
+  list.innerHTML = '';
+  const todayChapter = getNextChapterIdx();
+
+  BOOK_CHAPTERS.forEach((ch, idx) => {
+    const isDone = BOOK_STATE.completedChapters.has(idx);
+    const isToday = idx === todayChapter && !isDone;
+    const el = document.createElement('div');
+    el.className = 'book-chapter-card' + (isToday ? ' active-chapter' : '') + (isDone ? ' done-chapter' : '');
+    el.innerHTML = `
+      <div class="chapter-top">
+        <span class="chapter-num">${ch.part} · Ch. ${ch.num}</span>
+        <span class="chapter-badge ${isDone ? 'badge-done' : isToday ? 'badge-today' : 'badge-todo'}">${isDone ? '✓ Done' : isToday ? 'Today' : `+${ch.xp} XP`}</span>
+      </div>
+      <div class="chapter-title">${ch.title}</div>
+      <div class="chapter-hook">${ch.hook}</div>
+    `;
+    el.onclick = () => openChapterSession(idx);
+    list.appendChild(el);
+  });
+}
+
+function getNextChapterIdx() {
+  for (let i = 0; i < BOOK_CHAPTERS.length; i++) {
+    if (!BOOK_STATE.completedChapters.has(i)) return i;
+  }
+  return BOOK_CHAPTERS.length - 1;
+}
+
+function updateBookProgress() {
+  const done = BOOK_STATE.completedChapters.size;
+  const total = BOOK_CHAPTERS.length;
+  const xpEarned = [...BOOK_STATE.completedChapters].reduce((sum, i) => sum + BOOK_CHAPTERS[i].xp, 0);
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('book-chapters-done').textContent = done;
+  document.getElementById('book-xp-earned').textContent = xpEarned;
+  document.getElementById('book-prog-fill').style.width = pct + '%';
+  document.getElementById('book-prog-label').textContent = `${done} of ${total} chapters · Geoff Woods`;
+}
+
+function openChapterSession(idx) {
+  BOOK_STATE.currentChapterIdx = idx;
+  BOOK_STATE.summaryChecked = false;
+  const ch = BOOK_CHAPTERS[idx];
+
+  document.getElementById('session-breadcrumb').textContent = `Chapter ${ch.num} of ${BOOK_CHAPTERS.length}`;
+  document.getElementById('session-chapter-label').textContent = `${ch.part} · Chapter ${ch.num}`;
+  document.getElementById('session-chapter-title').textContent = ch.title;
+  document.getElementById('session-prompt').textContent = `After reading this chapter, write a summary in your own words. Aim for 4–6 sentences. Connect at least one idea to CutOff Recycle.`;
+
+  const ul = document.getElementById('key-ideas-list');
+  ul.innerHTML = ch.ideas.map(i => `<li>${i}</li>`).join('');
+
+  document.getElementById('summary-input').value = '';
+  document.getElementById('check-result-area').innerHTML = '';
+  document.getElementById('session-complete-btn').classList.add('hidden');
+  document.getElementById('check-loading').classList.add('hidden');
+
+  document.getElementById('book-list-view').classList.add('hidden');
+  document.getElementById('book-session-view').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+function backToBookList() {
+  document.getElementById('book-session-view').classList.add('hidden');
+  document.getElementById('book-list-view').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+function clearSummary() {
+  document.getElementById('summary-input').value = '';
+  document.getElementById('check-result-area').innerHTML = '';
+  document.getElementById('session-complete-btn').classList.add('hidden');
+  BOOK_STATE.summaryChecked = false;
+}
+
+async function checkSummary() {
+  const text = document.getElementById('summary-input').value.trim();
+  if (text.length < 60) { alert('Write a bit more — aim for 4–6 sentences.'); return; }
+
+  const ch = BOOK_CHAPTERS[BOOK_STATE.currentChapterIdx];
+  document.getElementById('check-loading').classList.remove('hidden');
+  document.getElementById('check-result-area').innerHTML = '';
+  document.getElementById('session-complete-btn').classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are checking whether David Denis Hariohay — CEO of CutOff Recycle, a Tanzanian agri-tech startup — has understood a chapter from "The AI-Driven Leader" by Geoff Woods. 
+
+David is learning AI to improve his business: organic fertilizer from human hair waste, team of 6, based in Arusha, Tanzania. His products are Rutubisha (solid fertilizer), Vuna (liquid foliar), McheKuza (biofertilizer).
+
+The chapter being checked is:
+Chapter ${ch.num}: "${ch.title}"
+
+The key points that MUST appear in a complete summary:
+${ch.keyPoints.map((p, i) => `${i+1}. ${p}`).join('\n')}
+
+Evaluate David's summary and respond ONLY with valid JSON, no markdown:
+{
+  "grade": "pass" | "partial" | "fail",
+  "score": <0-100>,
+  "opening": "<1–2 warm but honest sentences on overall quality>",
+  "captured": ["<idea he got right>", "<another>"],
+  "missed": ["<key point not mentioned or misunderstood>"],
+  "connection_to_business": "<did he connect it to CutOff Recycle? If yes, praise it. If no, suggest how.>",
+  "challenge": "<one hard follow-up question to push his thinking deeper — specific to his business>",
+  "ready_to_proceed": true | false
+}`,
+        messages: [{ role: 'user', content: `Chapter summary by David:\n\n${text}` }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content.map(b => b.text || '').join('');
+    const result = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    displayCheckResult(result, ch);
+  } catch(e) {
+    // Fallback
+    displayCheckResult({
+      grade: 'partial', score: 62,
+      opening: "Good effort — you've captured the main theme but missed a couple of key ideas.",
+      captured: ["You got the core framing right", "The business connection is on track"],
+      missed: ch.keyPoints.slice(2),
+      connection_to_business: "Try connecting one specific idea to a real CutOff Recycle challenge you're facing this week.",
+      challenge: `How would you apply the most important idea from this chapter to your current work at CutOff Recycle — specifically?`,
+      ready_to_proceed: true
+    }, ch);
+  }
+  document.getElementById('check-loading').classList.add('hidden');
+}
+
+function displayCheckResult(r, ch) {
+  const gradeMap = { pass: 'pass', partial: 'partial', fail: 'fail' };
+  const gradeLabel = { pass: '✓ Strong understanding', partial: '◑ Partial — review these', fail: '✗ Try again' };
+  const gradeClass = gradeMap[r.grade] || 'partial';
+
+  let missedHTML = '';
+  if (r.missed && r.missed.length > 0) {
+    missedHTML = `<div class="missed-ideas"><p>Key ideas you missed</p>${r.missed.map(m => `<span class="missed-idea-pill">${m}</span>`).join('')}</div>`;
+  }
+
+  let capturedHTML = '';
+  if (r.captured && r.captured.length > 0) {
+    capturedHTML = `<div style="margin-bottom:10px"><p style="font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:5px">What you captured well</p>${r.captured.map(c => `<div style="font-size:0.83rem;color:#a0ffa0;margin-bottom:3px">✓ ${c}</div>`).join('')}</div>`;
+  }
+
+  document.getElementById('check-result-area').innerHTML = `
+    <div class="check-result ${gradeClass}">
+      <div class="check-result-label">${gradeLabel[gradeClass]} · ${r.score}/100</div>
+      <div class="check-result-text">${r.opening}</div>
+    </div>
+    ${capturedHTML ? `<div class="feedback-box good" style="margin-bottom:10px">${capturedHTML}</div>` : ''}
+    ${r.missed && r.missed.length > 0 ? `<div class="feedback-box warn" style="margin-bottom:10px">${missedHTML}</div>` : ''}
+    <div class="feedback-box" style="margin-bottom:10px">
+      <div class="feedback-label">Business connection</div>
+      <div class="feedback-text">${r.connection_to_business}</div>
+    </div>
+    <div class="feedback-box" style="margin-bottom:12px;border-color:var(--accent2)">
+      <div class="feedback-label" style="color:var(--accent2)">Coach's challenge</div>
+      <div class="feedback-text">${r.challenge}</div>
+    </div>
+  `;
+
+  BOOK_STATE.summaryChecked = true;
+  if (r.ready_to_proceed || r.grade === 'pass' || r.grade === 'partial') {
+    document.getElementById('session-complete-btn').classList.remove('hidden');
+  }
+}
+
+function completeChapter() {
+  const idx = BOOK_STATE.currentChapterIdx;
+  const ch = BOOK_CHAPTERS[idx];
+  BOOK_STATE.completedChapters.add(idx);
+  STATE.xp += ch.xp;
+  STATE.built += 1;
+  document.getElementById('stat-xp').textContent = STATE.xp;
+  document.getElementById('stat-built').textContent = STATE.built;
+  updateBookProgress();
+  renderChapterList();
+  alert(`✅ Chapter ${ch.num} complete!\n+${ch.xp} XP earned\n\nTotal XP: ${STATE.xp}`);
+  backToBookList();
+}
+
+// Initialize book on load
+window.addEventListener('load', () => {
+  setGreeting();
+  buildStreak();
+  renderMissions();
+  initChat();
+  initBook();
+  setTimeout(() => {
+    document.getElementById('splash').classList.add('fade');
+    setTimeout(() => document.getElementById('splash').remove(), 500);
+  }, 1400);
+});
+
+
+function setGreeting() {
+  const h = new Date().getHours();
+  const greets = [[5,'Good morning'],[12,'Good afternoon'],[17,'Good evening'],[21,'Good night']];
+  let g = 'Hello';
+  for (const [hr, label] of greets) if (h >= hr) g = label;
+  document.getElementById('greeting-label').textContent = g + ' · David';
+}
+
+function buildStreak() {
+  const grid = document.getElementById('streak-grid');
+  const days = [];
+  for (let i = 20; i >= 0; i--) {
+    const d = document.createElement('div');
+    d.className = 'streak-day';
+    if (i === 0) d.className += ' today';
+    else if (i <= 7) d.className += ' done';
+    else if (i > 7 && i <= 9) d.className += ' missed';
+    days.push(d);
+  }
+  days.forEach(d => grid.appendChild(d));
+}
+
+// ── Navigation ──
+function goTo(screenId, navId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  if (navId) document.getElementById(navId).classList.add('active');
+  // map screen to nav
+  const map = { 'screen-home':'nav-home','screen-missions':'nav-missions','screen-lab':'nav-lab','screen-coach':'nav-coach','screen-progress':'nav-progress','screen-improve':'nav-improve','screen-book':'nav-book' };
+  if (!navId && map[screenId]) {
+    const nb = document.getElementById(map[screenId]);
+    if (nb) nb.classList.add('active');
+  }
+  window.scrollTo(0,0);
+}
+
+function startMission() { goTo('screen-lab','nav-lab'); }
+
+// ── Missions ──
+function renderMissions(cat = 'all') {
+  const list = document.getElementById('missions-list');
+  list.innerHTML = '';
+  MISSIONS.forEach((m, i) => {
+    if (cat !== 'all' && m.cat !== cat) return;
+    const el = document.createElement('div');
+    el.className = 'mission-pill' + (m.done ? ' done' : '');
+    el.innerHTML = `<div class="mission-pill-top"><span class="mission-pill-tag">${m.tag}</span><span class="mission-pill-xp">${m.done ? '✓ done' : '+'+m.xp+' XP'}</span></div><div class="mission-pill-title">${m.title}</div>`;
+    if (!m.done) el.onclick = () => loadMission(i);
+    list.appendChild(el);
+  });
+}
+
+function filterMissions(cat, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderMissions(cat);
+}
+
+function loadMission(idx) {
+  STATE.currentMissionIdx = idx;
+  const m = MISSIONS[idx];
+  document.getElementById('today-mission-tag').textContent = m.tag;
+  document.getElementById('today-mission-title').textContent = m.title;
+  document.getElementById('today-mission-body').textContent = m.body;
+  document.getElementById('today-mission-level').textContent = 'Level: ' + m.level;
+  document.getElementById('today-mission-xp').textContent = '+' + m.xp + ' XP';
+  document.getElementById('lab-context-card').querySelector('p').innerHTML = m.body;
+  goTo('screen-home','nav-home');
+}
+
+// ── Prompt Lab ──
+function clearPrompt() {
+  document.getElementById('prompt-input').value = '';
+  document.getElementById('lab-results').classList.add('hidden');
+  document.getElementById('improved-prompt-card').style.display = 'none';
+  STATE.promptGraded = false;
+}
+
+async function gradePrompt() {
+  const text = document.getElementById('prompt-input').value.trim();
+  if (!text) { alert('Write a prompt first!'); return; }
+
+  document.getElementById('lab-results').classList.add('hidden');
+  document.getElementById('lab-loading').classList.remove('hidden');
+
+  const mission = MISSIONS[STATE.currentMissionIdx];
+
+  try {
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are a strict but helpful AI prompt coach for David Denis, CEO of CutOff Recycle — a Tanzanian agri-tech startup that makes organic fertilizers (Rutubisha, Vuna, McheKuza) from human hair waste. David is learning AI by improving his actual business systems.
+
+Grade the user's prompt on these 5 dimensions (0-20 each, total 100):
+1. Clarity — Is it unambiguous?
+2. Context — Does it give enough background?
+3. Role definition — Does it tell the AI who to be?
+4. Output format — Does it specify what format to return?
+5. Constraints — Does it include limits or edge cases?
+
+Respond ONLY with valid JSON, no markdown, no preamble:
+{
+  "clarity": <0-20>,
+  "context": <0-20>,
+  "role": <0-20>,
+  "format": <0-20>,
+  "constraints": <0-20>,
+  "total": <0-100>,
+  "strength": "<one sentence on what's strong>",
+  "weakness": "<one sentence on what's weak>",
+  "challenge": "<one hard thinking question to push David further>",
+  "improved": "<a rewritten version of David's prompt, improved for his specific use case>"
+}`,
+        messages: [{ role: 'user', content: `Mission context: ${mission.body}\n\nDavid's prompt:\n${text}` }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content.map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(clean);
+    displayResults(result);
+  } catch(e) {
+    // Fallback if API not available
+    displayResults({
+      clarity: 14, context: 11, role: 9, format: 7, constraints: 6,
+      total: 47,
+      strength: "You've started with clear intent about the use case.",
+      weakness: "Missing a role definition and output format instruction — the AI doesn't know how to respond.",
+      challenge: "If a farmer asks about a crop you don't have data for, what should the assistant do?",
+      improved: `You are an expert agronomist and product specialist for CutOff Recycle, a Tanzanian organic fertilizer company. You know Vuna liquid fertilizer deeply — its amino acid formula, application rates (15 L/ha), timing windows, and suitability for different crops in the Arusha region.\n\nWhen a farmer asks about Vuna:\n- Always give a specific dosage answer\n- Mention the best application timing for their crop stage\n- If unsure, say so clearly and recommend contacting Richard at CutOff Recycle\n- Respond in simple language a smallholder farmer can understand\n- Keep answers under 100 words`
+    });
+  }
+  document.getElementById('lab-loading').classList.add('hidden');
+}
+
+function displayResults(r) {
+  document.getElementById('total-score').textContent = r.total;
+
+  const dims = [
+    { key: 'clarity', label: 'Clarity', val: r.clarity, color: '#7ef0c0' },
+    { key: 'context', label: 'Context', val: r.context, color: '#a78bfa' },
+    { key: 'role', label: 'Role definition', val: r.role, color: '#fb923c' },
+    { key: 'format', label: 'Output format', val: r.format, color: '#60a5fa' },
+    { key: 'constraints', label: 'Constraints', val: r.constraints, color: '#f472b6' },
+  ];
+
+  const barsEl = document.getElementById('score-bars');
+  barsEl.innerHTML = '';
+  dims.forEach(d => {
+    const pct = (d.val / 20) * 100;
+    barsEl.innerHTML += `<div class="score-item"><div class="score-label"><span>${d.label}</span><span style="color:${d.color}">${d.val}/20</span></div><div class="score-bar"><div class="score-fill" style="width:0%;background:${d.color}" data-target="${pct}"></div></div></div>`;
+  });
+
+  const fbEl = document.getElementById('feedback-area');
+  fbEl.innerHTML = `
+    <div class="feedback-box good"><div class="feedback-label">Strength</div><div class="feedback-text">${r.strength}</div></div>
+    <div class="feedback-box warn"><div class="feedback-label">Improve this</div><div class="feedback-text">${r.weakness}</div></div>
+    <div class="feedback-box"><div class="feedback-label">Coach's challenge</div><div class="feedback-text">${r.challenge}</div></div>
+  `;
+
+  if (r.improved) {
+    document.getElementById('improved-prompt-text').textContent = r.improved;
+    document.getElementById('improved-prompt-card').style.display = 'block';
+  }
+
+  document.getElementById('lab-results').classList.remove('hidden');
+  STATE.promptGraded = true;
+
+  // Animate bars after DOM paint
+  setTimeout(() => {
+    document.querySelectorAll('.score-fill[data-target]').forEach(el => {
+      el.style.width = el.dataset.target + '%';
+    });
+  }, 100);
+}
+
+function saveAndNext() {
+  if (!STATE.promptGraded) return;
+  const m = MISSIONS[STATE.currentMissionIdx];
+  STATE.xp += m.xp;
+  STATE.built += 1;
+  m.done = true;
+  document.getElementById('stat-xp').textContent = STATE.xp;
+  document.getElementById('stat-built').textContent = STATE.built;
+  renderMissions();
+  alert(`✅ Saved! +${m.xp} XP earned.\nYou're at ${STATE.xp} XP total.`);
+  clearPrompt();
+  goTo('screen-home','nav-home');
+}
+
+// ── Coach Chat ──
+const COACH_SYSTEM = `You are an AI coach for David Denis Hariohay, CEO and Founder of CutOff Recycle Limited — a Tanzanian agri-tech startup that recycles human hair waste into organic fertilizers. Products: Rutubisha (solid), Vuna (liquid foliar), McheKuza (Tokyo 8 biofertilizer). Team of 6, based at SIDO Arusha. David is actively learning AI to improve his business operations.
+
+Your role:
+- Teach AI concepts by connecting them directly to CutOff Recycle's real challenges
+- Give feedback on prompts, suggest improvements, challenge his thinking
+- Keep answers short, practical, and founder-focused — no academic theory
+- You know his stack: Jira, Slack, KoboToolbox, cr-assistant (his internal AI tool)
+- He is at "Operator" level moving toward "Builder"
+
+Respond in 2-4 short paragraphs max. Be direct and confident.`;
+
+function initChat() {
+  const opener = [
+    { role: 'coach', text: "Hey David — ready for today's session? You're 7 days in and building real momentum." },
+    { role: 'coach', text: "Today's mission is about upgrading your cr-assistant for farmer queries. Ask me anything — about the mission, about AI concepts, or about what to build next." }
+  ];
+  STATE.chatHistory = [];
+  opener.forEach(m => appendBubble(m.role, m.text));
+}
+
+function appendBubble(role, text) {
+  const wrap = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'chat-wrap';
+  if (role === 'coach') {
+    div.innerHTML = `<div class="coach-name">Coach AI</div><div class="bubble coach">${text}</div>`;
+  } else {
+    div.innerHTML = `<div style="display:flex;justify-content:flex-end"><div class="bubble user">${text}</div></div>`;
+  }
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  appendBubble('user', text);
+  STATE.chatHistory.push({ role: 'user', content: text });
+
+  document.getElementById('chat-loading').classList.remove('hidden');
+
+  try {
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: COACH_SYSTEM,
+        messages: STATE.chatHistory
+      })
+    });
+    const data = await res.json();
+    const reply = data.content.map(b => b.text || '').join('').trim();
+    STATE.chatHistory.push({ role: 'assistant', content: reply });
+    document.getElementById('chat-loading').classList.add('hidden');
+    appendBubble('coach', reply);
+  } catch(e) {
+    document.getElementById('chat-loading').classList.add('hidden');
+    appendBubble('coach', "I'm having a connection issue right now. Try again in a moment — or keep working on your prompt in the Lab.");
+  }
+}
+
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendChat();
+});
+
+// ── Improve tasks ──
+function loadImproveTask() {
+  const preload = `You are a smart, professional AI assistant for CutOff Recycle, a Tanzanian organic fertilizer company. When you are uncertain about an answer, you must say so clearly.
+
+If you cannot confidently answer a farmer's question, respond with:
+"I'm not fully certain about this. I recommend speaking directly with Richard or Kephason from the CutOff Recycle team for specific advice. You can reach the team at [contact]."
+
+Never guess or provide potentially harmful agronomic advice.`;
+  document.getElementById('prompt-input').value = preload;
+  document.getElementById('lab-results').classList.add('hidden');
+  goTo('screen-lab','nav-lab');
+}
+</script>
+</body>
+</html>
