@@ -8,6 +8,63 @@
 <title>FounderAI — Daily Learning</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FounderAI">
+<link rel="apple-touch-icon" id="apple-icon" href="">
+<link rel="manifest" id="pwa-manifest" href="">
+<script>
+(function(){
+  function makeIcon(size) {
+    const c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    const ctx = c.getContext('2d');
+    const r = size * 0.22;
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, 0, size, size);
+    ctx.beginPath();
+    ctx.moveTo(r, 0); ctx.lineTo(size-r, 0);
+    ctx.quadraticCurveTo(size,0,size,r);
+    ctx.lineTo(size,size-r);
+    ctx.quadraticCurveTo(size,size,size-r,size);
+    ctx.lineTo(r,size); ctx.quadraticCurveTo(0,size,0,size-r);
+    ctx.lineTo(0,r); ctx.quadraticCurveTo(0,0,r,0);
+    ctx.closePath(); ctx.clip();
+    ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0,0,size,size);
+    const grad = ctx.createRadialGradient(size*.5,size*.42,0,size*.5,size*.42,size*.48);
+    grad.addColorStop(0,'rgba(126,240,192,0.2)');
+    grad.addColorStop(1,'rgba(126,240,192,0)');
+    ctx.fillStyle = grad; ctx.fillRect(0,0,size,size);
+    ctx.fillStyle = '#7ef0c0';
+    ctx.font = `900 ${Math.floor(size*.54)}px Arial Black,Arial`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('F', size*.46, size*.47);
+    ctx.fillStyle = 'rgba(126,240,192,0.75)';
+    ctx.font = `700 ${Math.floor(size*.17)}px Arial`;
+    ctx.fillText('AI', size*.72, size*.73);
+    return c.toDataURL('image/png');
+  }
+  window.addEventListener('DOMContentLoaded', function() {
+    const i192 = makeIcon(192);
+    const i512 = makeIcon(512);
+    document.getElementById('apple-icon').href = i512;
+    const manifest = {
+      name:'FounderAI', short_name:'FounderAI',
+      description:'Your daily AI mastery app',
+      start_url:'/', display:'standalone',
+      background_color:'#0a0a0f', theme_color:'#0a0a0f',
+      orientation:'portrait',
+      icons:[
+        {src:i192,sizes:'192x192',type:'image/png'},
+        {src:i512,sizes:'512x512',type:'image/png'}
+      ]
+    };
+    const blob = new Blob([JSON.stringify(manifest)],{type:'application/json'});
+    document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+  });
+})();
+</script>
 <style>
   :root {
     --bg: #0a0a0f;
